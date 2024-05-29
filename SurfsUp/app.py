@@ -1,23 +1,34 @@
 # Import the dependencies.
 import numpy as np
-
+from pathlib import Path
 import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, inspect, func
 
-from flask import Flask, jsonify
-import datetime as dt
+# from flask import Flask, jsonify
+# import datetime as dt
 
 
 # #################################################
 # # Database Setup
-# engine = create_engine("sqlite:///../Resources/hawaii.sqlite", echo=False)
+# Create a reference to the file. 
+# database_path = Path("/Resources/hawaii.sqlite")
+
+# engine = create_engine(f"sqlite:///{database_path}",echo=False)
+engine = create_engine("sqlite:///Resources/hawaii.sqlite")
+
+
+# engine = create_engine("sqlite:///Resources/hawaii.sqlite", echo=False)
 
 # #################################################
 
-
 # # # # reflect an existing database into a new model
+Base = automap_base()
+Base.prepare(engine, reflect=True)
+Base.classes.keys()
+
+
 # Base = automap_base()
 # Base.prepare(autoload_with=engine)
 # Base.prepare(engine, reflect=True)
