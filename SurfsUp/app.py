@@ -12,7 +12,7 @@ from sqlalchemy import create_engine, inspect, func
 
 # #################################################
 # # Database Setup
-# Create a reference to the file. 
+# Create a reference to the file.
 # database_path = Path("/Resources/hawaii.sqlite")
 
 # engine = create_engine(f"sqlite:///{database_path}",echo=False)
@@ -30,12 +30,9 @@ Base = automap_base()
 Base.prepare(engine, reflect=True)
 
 
-
-
 # # Save references to each table
-
-# Measurement = Base.classes.measurement
-# Station = Base.classes.station
+Measurement = Base.classes.measurement
+Station = Base.classes.station
 
 
 # # Create our session (link) from Python to the DB
