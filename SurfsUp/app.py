@@ -1,12 +1,13 @@
-# Import the dependencies.
-from flask import Flask, jsonify
+# # Import the dependencies.
+
 import numpy as np
-from pathlib import Path
+
 import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
-from sqlalchemy import create_engine, inspect, func
+from sqlalchemy import create_engine, func, inspect
 
+from flask import Flask, jsonify
 
 import datetime as dt
 
@@ -18,9 +19,6 @@ import datetime as dt
 
 # engine = create_engine(f"sqlite:///{database_path}",echo=False)
 engine = create_engine("sqlite:///Resources/hawaii.sqlite")
-
-
-# engine = create_engine("sqlite:///Resources/hawaii.sqlite", echo=False)
 
 # #################################################
 
@@ -39,10 +37,18 @@ Station = Base.classes.station
 session = Session(engine)
 
 
+# Calculate the latest date and previous one year date
+def latest_date():
+    latest_date = session.query(Measurement.date).order_by(
+        Measurement.date.desc()).first()
+    one_year = dt.datetime.strptime(
+        one_year, "%Y-%m-%d") - dt.timedelta(days=365)
+    return (one_year)
+
+
 # #################################################
 # # Flask Setup
 # #################################################
-# from flask import Flask
 # # Create an app, being sure to pass __name__
 app = Flask(__name__)
 
@@ -64,50 +70,55 @@ def homepage():
         f"/api/v1.0/<start>/<end><br/>"
     )
 
-#  Explore: /api/v1.0/precipitation
+#  Explore: precipitation
 
 
-@app.route("/")
+@app.route("/api/v1.0/precipitation")
 def Precipitation():
-    latest_date = session.query(func.max(Measurement.date))
-    latest_date = dt.datetime.strptime(lastdate, "%Y-%m-%d").date()
-    begin_date = latest_date - dt.timedelta(days=365)
-    begin_date = begin_date.strftime("%Y-%m-%d")
-    over_ayeardata = session.query(Measurement.date, Measurement.prcp).\
-        filter(Measurement.date.between(begin_date, latest_date)).all()
+    one_year = latest_date()
+    precipt_results = session.query(Measurement.date, Measurement.prcp).\
+        filter(Measurement.date >= one_year).all()
+    # change to dict for json prep
+    precipt_results = dict(precipt_results)
+    return jsonify(precipt_results)
 
-    precipts = []
-    for date, precipts in over_ayeardata:
-        precipts_dict = {}
-        precipts_dict['date'] = date
-        precipts_dict['prcp'] = prcp
-        precipts.append(precipts_dict)
-    return jsonify(precipts)
-
-# Explore: /api/v1.0/stations to return JSON list for station
+# Explore: stations to return JSON list for station
 
 
-@app.route("/")
+@app.route("/api/v1.0/stations")
 def stations():
-
-    station_data = session.query(Station.Name).all()
+    station = session.query(Station.station).all()
     station_data = list(np.ravel(station_data))
     return jsonify(station_data)
 
+# Explore: to get  JSON of Temperature Observations
 
-# # Explore: /api/v1.0/stations
-# @app.route("/api/v1.0/stations")
-# def stations():
-#     station_data = session.query(Station.station, Station.name).all()
-#     return jsonify(station_data)
 
-# # Explore:/api/v1.0/tobs
-# @app.route("/api/v1.0/tobs")
-# def tobs():
-#     tobs_data = session.query(Measurement.date, Measurement.station, Measurement.tobs).filter(Measurement.date >= last_twelve_months).all()
-#     return jsonify(tobs_data)
+@app.route("/api/v1.0/tobs")
+def tobs():
+    tobs_results = session.query(Measurement.date, Measurement.station, Measurement.tobs).\
+        filter(Measurement.date >= one_year).all()
+    tobs_ = list(tobs_results)
+    return jsonify(tobs_results)
 
- # Date 12 months ago
+# Explore: calculation MIN, AVG, and MAX for for dates greater than/equal  start date.
+
+
+@app.route("/api/v1.0/start")
+def startdate(date):
+    startdate_temp = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+        filter(Measurement.date >= date).all()
+    return jsonify(startdate_temp)
+
+
+# Explore: calculation MIN, AVG, and MAX for for dates greater than/equal  start to end date.
+
+@app.route("/api/v1.0/startend")
+def startDateEndDate(start, end):
+    startEnd_results = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+        filter(Measurement.date >= start, Measurement.date <= end).all()
+    startEndresults = list(np.ravel(startEnd_results))
+    return jsonify(startEndresults)
 
 
 # if __name__ == "__main__":
