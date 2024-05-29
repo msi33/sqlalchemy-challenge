@@ -25,28 +25,15 @@ engine = create_engine("sqlite:///Resources/hawaii.sqlite")
 
 # # # # reflect an existing database into a new model
 Base = automap_base()
+
+# reflect the tables
 Base.prepare(engine, reflect=True)
-Base.classes.keys()
 
 
-# Base = automap_base()
-# Base.prepare(autoload_with=engine)
-# Base.prepare(engine, reflect=True)
-# # # Base.classes.keys()
-
-
-# # reflect the tables
-# Base.prepare(autoload_with=engine)
-# # Dow = Base.classes.dow
-
-
-# # Reflect Database into ORM classes
-# Base = automap_base()
-# Base.prepare(autoload_with=engine)
-# Base.classes.keys()
 
 
 # # Save references to each table
+
 # Measurement = Base.classes.measurement
 # Station = Base.classes.station
 
